@@ -1,0 +1,53 @@
+### 1. Register
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "alice",
+  "email": "alice@example.com",
+  "password": "secret123"
+}
+
+### 2. Login
+POST http://localhost:8081/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "alice",
+  "password": "secret123"
+}
+
+### 3. Create Account (paste your token from step 2)
+POST http://localhost:8080/api/accounts
+Content-Type: application/json
+Authorization: Bearer PASTE_TOKEN_HERE
+
+{
+  "accountType": "SAVINGS",
+  "initialDeposit": 1000.00
+}
+
+### 4. Deposit
+POST http://localhost:8080/api/accounts/1/deposit
+Content-Type: application/json
+Authorization: Bearer PASTE_TOKEN_HERE
+
+{
+  "amount": 500.00,
+  "description": "Salary"
+}
+
+### 5. Transfer
+POST http://localhost:8080/api/accounts/1/transfer
+Content-Type: application/json
+Authorization: Bearer PASTE_TOKEN_HERE
+
+{
+  "targetAccountNumber": "PASTE_ACCOUNT_NUMBER_HERE",
+  "amount": 200.00,
+  "description": "Rent"
+}
+
+### 6. Transaction History
+GET http://localhost:8080/api/accounts/1/transactions
+Authorization: Bearer PASTE_TOKEN_HERE

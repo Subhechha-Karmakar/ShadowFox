@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SecureBank — Online Banking</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0d1b2a;--navy2:#1b2e45;--navy3:#243b55;
+  --gold:#c9a84c;--gold2:#e8c76a;
+  --green:#16a34a;--red:#dc2626;--blue:#2563eb;
+  --bg:#f0f4f8;--surface:#ffffff;--surface2:#f8fafc;
+  --border:#e2e8f0;--border2:#cbd5e1;
+  --text:#0f172a;--muted:#64748b;--hint:#94a3b8;
+  --radius:10px;--radius2:14px;
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* SIDEBAR */
+.layout{display:flex;min-height:100vh}
+.sidebar{width:220px;background:var(--navy);display:flex;flex-direction:column;flex-shrink:0}
+.sidebar-logo{padding:24px 20px 20px;border-bottom:1px solid rgba(255,255,255,0.08)}
+.logo-mark{display:flex;align-items:center;gap:10px}
+.logo-icon{width:32px;height:32px;background:var(--gold);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--navy)}
+.logo-text{font-size:15px;font-weight:600;color:white;letter-spacing:0.02em}
+.logo-sub{font-size:10px;color:rgba(255,255,255,0.4);margin-top:1px}
+.sidebar-nav{padding:16px 12px;flex:1}
+.nav-label{font-size:10px;font-weight:600;letter-spacing:0.1em;color:rgba(255,255,255,0.3);padding:0 8px;margin-bottom:6px;margin-top:16px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;color:rgba(255,255,255,0.55);font-size:13px;font-weight:500;transition:all 0.15s;margin-bottom:2px}
+.nav-item:hover{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.85)}
+.nav-item.active{background:rgba(201,168,76,0.15);color:var(--gold2)}
+.nav-item svg{width:16px;height:16px;flex-shrink:0;opacity:0.8}
+.sidebar-user{padding:14px 16px;border-top:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:10px}
+.user-avatar{width:32px;height:32px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--navy);flex-shrink:0}
+.user-info{flex:1;min-width:0}
+.user-name{font-size:12px;font-weight:600;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-role{font-size:10px;color:rgba(255,255,255,0.4)}
+.logout-btn{background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.35);padding:4px;border-radius:4px;display:flex;align-items:center}
+.logout-btn:hover{color:rgba(255,255,255,0.7)}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between}
+.topbar-title{font-size:15px;font-weight:600;color:var(--text)}
+.topbar-actions{display:flex;align-items:center;gap:8px}
+.content{padding:24px 28px;flex:1}
+
+/* AUTH */
+.auth-wrap{min-height:100vh;background:var(--navy);display:flex;align-items:center;justify-content:center}
+.auth-card{background:var(--surface);border-radius:var(--radius2);padding:36px;width:380px}
+.auth-logo{display:flex;align-items:center;gap:10px;margin-bottom:28px;justify-content:center}
+.auth-logo .logo-icon{width:40px;height:40px;font-size:20px}
+.auth-logo .logo-text{font-size:18px;color:var(--navy)}
+.auth-tabs{display:flex;gap:0;margin-bottom:24px;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.auth-tab{flex:1;padding:9px;text-align:center;font-size:13px;font-weight:500;cursor:pointer;color:var(--muted);background:var(--surface2);border:none;transition:all 0.15s}
+.auth-tab.active{background:var(--navy);color:white}
+.form-group{margin-bottom:14px}
+.form-label{display:block;font-size:12px;font-weight:500;color:var(--muted);margin-bottom:5px}
+.form-input{width:100%;padding:9px 12px;border:1px solid var(--border2);border-radius:8px;font-size:13px;color:var(--text);background:var(--surface);outline:none;transition:border 0.15s}
+.form-input:focus{border-color:var(--navy)}
+.btn{padding:10px 18px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all 0.15s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--navy);color:white;width:100%;justify-content:center}
+.btn-primary:hover{background:var(--navy2)}
+.btn-success{background:var(--green);color:white}
+.btn-success:hover{opacity:0.9}
+.btn-danger{background:var(--red);color:white}
+.btn-danger:hover{opacity:0.9}
+.btn-outline{background:transparent;border:1px solid var(--border2);color:var(--text)}
+.btn-outline:hover{background:var(--surface2)}
+.btn-gold{background:var(--gold);color:var(--navy);font-weight:600}
+.btn-gold:hover{background:var(--gold2)}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius2);padding:20px}
+.card-title{font-size:13px;font-weight:600;color:var(--muted);margin-bottom:16px;display:flex;align-items:center;gap:6px}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:24px}
+.stat-card{background:var(--surface2);border-radius:var(--radius);padding:16px}
+.stat-label{font-size:11px;color:var(--muted);margin-bottom:6px}
+.stat-value{font-size:22px;font-weight:600;color:var(--text)}
+.stat-sub{font-size:11px;color:var(--hint);margin-top:3px}
+
+/* ACCOUNT CARDS */
+.account-card{background:var(--navy);border-radius:var(--radius2);padding:20px;color:white;position:relative;overflow:hidden;cursor:pointer;transition:transform 0.15s}
+.account-card:hover{transform:translateY(-2px)}
+.account-card::after{content:'';position:absolute;right:-20px;top:-20px;width:100px;height:100px;border:20px solid rgba(255,255,255,0.05);border-radius:50%}
+.account-type-badge{font-size:10px;font-weight:600;letter-spacing:0.08em;color:var(--gold2);background:rgba(201,168,76,0.15);border:1px solid rgba(201,168,76,0.2);padding:3px 8px;border-radius:20px;display:inline-block;margin-bottom:14px}
+.account-number{font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:8px;font-family:monospace}
+.account-balance{font-size:26px;font-weight:700;color:white}
+.account-balance-label{font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px}
+.accounts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:24px}
+
+/* TXN */
+.txn-list{display:flex;flex-direction:column;gap:1px}
+.txn-row{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--surface);border-radius:8px;margin-bottom:4px;border:1px solid var(--border)}
+.txn-icon{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px}
+.txn-icon-deposit{background:#dcfce7;color:var(--green)}
+.txn-icon-withdrawal{background:#fee2e2;color:var(--red)}
+.txn-icon-transfer{background:#dbeafe;color:var(--blue)}
+.txn-info{flex:1;min-width:0}
+.txn-title{font-size:13px;font-weight:500;color:var(--text)}
+.txn-meta{font-size:11px;color:var(--hint);margin-top:1px}
+.txn-amount{font-size:14px;font-weight:600;text-align:right}
+.txn-amount.credit{color:var(--green)}
+.txn-amount.debit{color:var(--red)}
+.txn-balance{font-size:11px;color:var(--hint);text-align:right;margin-top:1px}
+
+/* MODALS */
+.modal-overlay{background:rgba(13,27,42,0.6);border-radius:var(--radius2);padding:24px;margin-bottom:16px}
+.modal-box{background:var(--surface);border-radius:var(--radius2);padding:24px;max-width:400px}
+.modal-title{font-size:15px;font-weight:600;margin-bottom:18px;display:flex;align-items:center;gap:8px}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
+
+/* ALERTS */
+.alert{padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.alert-success{background:#dcfce7;color:#166534;border:1px solid #bbf7d0}
+.alert-error{background:#fee2e2;color:#991b1b;border:1px solid #fecaca}
+.alert-info{background:#dbeafe;color:#1e40af;border:1px solid #bfdbfe}
+
+/* MISC */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.section-title-text{font-size:14px;font-weight:600;color:var(--text)}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-savings{background:#dbeafe;color:#1e40af}
+.badge-checking{background:#fef9c3;color:#854d0e}
+.empty-state{text-align:center;padding:40px 20px;color:var(--hint)}
+.empty-state svg{margin:0 auto 12px;display:block;opacity:0.3}
+.divider{height:1px;background:var(--border);margin:16px 0}
+select.form-input{cursor:pointer}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;background:var(--surface2);border:1px solid var(--border);color:var(--muted)}
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script>
+const API = 'http://localhost:8081';
+let state = {
+  view: 'auth',
+  authTab: 'login',
+  token: localStorage.getItem('sb_token') || null,
+  user: JSON.parse(localStorage.getItem('sb_user') || 'null'),
+  accounts: [],
+  selectedAccount: null,
+  transactions: [],
+  loading: false,
+  alert: null,
+  navPage: 'dashboard',
+  showModal: null,
+};
+
+function setState(patch) {
+  Object.assign(state, patch);
+  render();
+}
+
+async function api(method, path, body) {
+  const headers = {'Content-Type':'application/json'};
+  if (state.token) headers['Authorization'] = 'Bearer ' + state.token;
+  const res = await fetch(API + path, {method, headers, body: body ? JSON.stringify(body) : undefined});
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Request failed');
+  return data;
+}
+
+function showAlert(type, msg, duration=4000) {
+  setState({alert:{type,msg}});
+  setTimeout(() => setState({alert:null}), duration);
+}
+
+async function doRegister() {
+  const username = document.getElementById('reg-username')?.value?.trim();
+  const email = document.getElementById('reg-email')?.value?.trim();
+  const password = document.getElementById('reg-password')?.value;
+  if (!username || !email || !password) return showAlert('error','All fields are required');
+  try {
+    setState({loading:true});
+    const res = await api('POST','/api/auth/register',{username,email,password});
+    localStorage.setItem('sb_token', res.data.token);
+    localStorage.setItem('sb_user', JSON.stringify(res.data));
+    setState({token:res.data.token, user:res.data, view:'app', navPage:'dashboard', loading:false});
+    loadAccounts();
+  } catch(e) { setState({loading:false}); showAlert('error', e.message); }
+}
+
+async function doLogin() {
+  const username = document.getElementById('login-username')?.value?.trim();
+  const password = document.getElementById('login-password')?.value;
+  if (!username || !password) return showAlert('error','Enter username and password');
+  try {
+    setState({loading:true});
+    const res = await api('POST','/api/auth/login',{username,password});
+    localStorage.setItem('sb_token', res.data.token);
+    localStorage.setItem('sb_user', JSON.stringify(res.data));
+    setState({token:res.data.token, user:res.data, view:'app', navPage:'dashboard', loading:false});
+    loadAccounts();
+  } catch(e) { setState({loading:false}); showAlert('error', e.message); }
+}
+
+async function loadAccounts() {
+  try {
+    const res = await api('GET','/api/accounts');
+    setState({accounts: res.data || []});
+  } catch(e) { showAlert('error','Failed to load accounts'); }
+}
+
+async function loadTransactions(accountId) {
+  try {
+    const res = await api('GET',`/api/accounts/${accountId}/transactions?page=0&size=50`);
+    setState({transactions: res.data?.content || []});
+  } catch(e) { showAlert('error','Failed to load transactions'); }
+}
+
+async function createAccount() {
+  const type = document.getElementById('acc-type')?.value;
+  const deposit = parseFloat(document.getElementById('acc-deposit')?.value || '0');
+  if (deposit < 0) return showAlert('error','Initial deposit cannot be negative');
+  try {
+    setState({loading:true});
+    await api('POST','/api/accounts',{accountType:type, initialDeposit:deposit});
+    await loadAccounts();
+    setState({loading:false, showModal:null});
+    showAlert('success','Account created successfully');
+  } catch(e) { setState({loading:false}); showAlert('error', e.message); }
+}
+
+async function doDeposit() {
+  const amount = parseFloat(document.getElementById('txn-amount')?.value || '0');
+  const desc = document.getElementById('txn-desc')?.value || '';
+  if (!amount || amount <= 0) return showAlert('error','Enter a valid amount');
+  try {
+    setState({loading:true});
+    await api('POST',`/api/accounts/${state.selectedAccount.id}/deposit`,{amount,description:desc});
+    await loadAccounts();
+    if (state.navPage === 'transactions') await loadTransactions(state.selectedAccount.id);
+    setState({loading:false, showModal:null});
+    showAlert('success',`Deposited $${amount.toFixed(2)} successfully`);
+  } catch(e) { setState({loading:false}); showAlert('error', e.message); }
+}
+
+async function doWithdraw() {
+  const amount = parseFloat(document.getElementById('txn-amount')?.value || '0');
+  const desc = document.getElementById('txn-desc')?.value || '';
+  if (!amount || amount <= 0) return showAlert('error','Enter a valid amount');
+  try {
+    setState({loading:true});
+    await api('POST',`/api/accounts/${state.selectedAccount.id}/withdraw`,{amount,description:desc});
+    await loadAccounts();
+    if (state.navPage === 'transactions') await loadTransactions(state.selectedAccount.id);
+    setState({loading:false, showModal:null});
+    showAlert('success',`Withdrawn $${amount.toFixed(2)} successfully`);
+  } catch(e) { setState({loading:false}); showAlert('error', e.message); }
+}
+
+async function doTransfer() {
+  const targetAccountNumber = document.getElementById('transfer-target')?.value?.trim();
+  const amount = parseFloat(document.getElementById('transfer-amount')?.value || '0');
+  const desc = document.getElementById('transfer-desc')?.value || '';
+  if (!targetAccountNumber) return showAlert('error','Enter target account number');
+  if (!amount || amount <= 0) return showAlert('error','Enter a valid amount');
+  try {
+    setState({loading:true});
+    await api('POST',`/api/accounts/${state.selectedAccount.id}/transfer`,{targetAccountNumber,amount,description:desc});
+    await loadAccounts();
+    if (state.navPage === 'transactions') await loadTransactions(state.selectedAccount.id);
+    setState({loading:false, showModal:null});
+    showAlert('success',`Transferred $${amount.toFixed(2)} successfully`);
+  } catch(e) { setState({loading:false}); showAlert('error', e.message); }
+}
+
+function doLogout() {
+  localStorage.removeItem('sb_token');
+  localStorage.removeItem('sb_user');
+  setState({token:null,user:null,view:'auth',accounts:[],transactions:[],selectedAccount:null});
+}
+
+function navigate(page, account) {
+  if (page === 'transactions' && account) {
+    setState({navPage:page, selectedAccount:account});
+    loadTransactions(account.id);
+  } else {
+    setState({navPage:page});
+    if (page === 'dashboard' || page === 'accounts') loadAccounts();
+  }
+}
+
+function fmtMoney(n) { return '$' + parseFloat(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fmtDate(s) { return new Date(s).toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}); }
+function shortAccNum(n) { if (!n) return ''; return n.substring(0,8)+'...'+n.substring(n.length-4); }
+function initials(name) { return (name||'U').substring(0,2).toUpperCase(); }
+
+function svgIcon(name) {
+  const icons = {
+    home:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
+    credit:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>`,
+    list:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>`,
+    plus:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
+    logout:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>`,
+    arrow:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>`,
+    lock:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>`,
+    bank:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="3" y1="22" x2="21" y2="22"/><line x1="6" y1="18" x2="6" y2="11"/><line x1="10" y1="18" x2="10" y2="11"/><line x1="14" y1="18" x2="14" y2="11"/><line x1="18" y1="18" x2="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg>`,
+  };
+  return icons[name] || '';
+}
+
+function renderAlert() {
+  if (!state.alert) return '';
+  const cls = state.alert.type === 'success' ? 'alert-success' : state.alert.type === 'error' ? 'alert-error' : 'alert-info';
+  const icon = state.alert.type === 'success' ? '✓' : state.alert.type === 'error' ? '✕' : 'ℹ';
+  return `<div class="alert ${cls}"><span>${icon}</span>${state.alert.msg}</div>`;
+}
+
+function renderAuth() {
+  return `
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <div class="logo-icon">S</div>
+        <div>
+          <div class="logo-text" style="color:var(--navy);font-size:18px">SecureBank</div>
+          <div class="logo-sub" style="color:var(--hint)">Online Banking Platform</div>
+        </div>
+      </div>
+      ${renderAlert()}
+      <div class="auth-tabs">
+        <button class="auth-tab ${state.authTab==='login'?'active':''}" onclick="setState({authTab:'login'})">Sign in</button>
+        <button class="auth-tab ${state.authTab==='register'?'active':''}" onclick="setState({authTab:'register'})">Register</button>
+      </div>
+      ${state.authTab === 'login' ? `
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <input id="login-username" class="form-input" placeholder="Enter your username" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input id="login-password" type="password" class="form-input" placeholder="Enter your password" />
+        </div>
+        <button class="btn btn-primary" onclick="doLogin()" ${state.loading?'disabled':''}>
+          ${state.loading?'Signing in...':'Sign in'}
+        </button>
+      ` : `
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <input id="reg-username" class="form-input" placeholder="Choose a username" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input id="reg-email" class="form-input" type="email" placeholder="your@email.com" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input id="reg-password" type="password" class="form-input" placeholder="Min 8 characters" />
+        </div>
+        <button class="btn btn-primary" onclick="doRegister()" ${state.loading?'disabled':''}>
+          ${state.loading?'Creating account...':'Create account'}
+        </button>
+      `}
+      <div style="margin-top:16px;text-align:center;font-size:12px;color:var(--hint);display:flex;align-items:center;justify-content:center;gap:6px">
+        ${svgIcon('lock')} Connected to Spring Boot API on localhost:8081
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderModal() {
+  if (!state.showModal) return '';
+  let content = '';
+
+  if (state.showModal === 'create-account') {
+    content = `
+      <div class="modal-title">${svgIcon('plus')} Create new account</div>
+      <div class="form-group">
+        <label class="form-label">Account type</label>
+        <select id="acc-type" class="form-input">
+          <option value="SAVINGS">Savings</option>
+          <option value="CHECKING">Checking</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Initial deposit ($)</label>
+        <input id="acc-deposit" class="form-input" type="number" min="0" step="0.01" value="0" placeholder="0.00" />
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="setState({showModal:null})">Cancel</button>
+        <button class="btn btn-primary" onclick="createAccount()">Create account</button>
+      </div>`;
+  } else if (state.showModal === 'deposit') {
+    content = `
+      <div class="modal-title" style="color:var(--green)">Deposit funds</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:16px">To: ${state.selectedAccount?.accountType} — ${shortAccNum(state.selectedAccount?.accountNumber)}</div>
+      <div class="form-group">
+        <label class="form-label">Amount ($)</label>
+        <input id="txn-amount" class="form-input" type="number" min="0.01" step="0.01" placeholder="0.00" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description (optional)</label>
+        <input id="txn-desc" class="form-input" placeholder="e.g. Salary" />
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="setState({showModal:null})">Cancel</button>
+        <button class="btn btn-success" onclick="doDeposit()">Deposit</button>
+      </div>`;
+  } else if (state.showModal === 'withdraw') {
+    content = `
+      <div class="modal-title" style="color:var(--red)">Withdraw funds</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:16px">From: ${state.selectedAccount?.accountType} — Available: ${fmtMoney(state.selectedAccount?.balance||0)}</div>
+      <div class="form-group">
+        <label class="form-label">Amount ($)</label>
+        <input id="txn-amount" class="form-input" type="number" min="0.01" step="0.01" placeholder="0.00" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description (optional)</label>
+        <input id="txn-desc" class="form-input" placeholder="e.g. Grocery shopping" />
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="setState({showModal:null})">Cancel</button>
+        <button class="btn btn-danger" onclick="doWithdraw()">Withdraw</button>
+      </div>`;
+  } else if (state.showModal === 'transfer') {
+    content = `
+      <div class="modal-title" style="color:var(--blue)">Transfer funds</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:16px">From: ${state.selectedAccount?.accountType} — Available: ${fmtMoney(state.selectedAccount?.balance||0)}</div>
+      <div class="form-group">
+        <label class="form-label">Target account number</label>
+        <input id="transfer-target" class="form-input" placeholder="Paste account UUID here" style="font-family:monospace;font-size:12px" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Amount ($)</label>
+        <input id="transfer-amount" class="form-input" type="number" min="0.01" step="0.01" placeholder="0.00" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description (optional)</label>
+        <input id="transfer-desc" class="form-input" placeholder="e.g. Rent payment" />
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="setState({showModal:null})">Cancel</button>
+        <button class="btn" style="background:var(--blue);color:white" onclick="doTransfer()">Transfer</button>
+      </div>`;
+  }
+
+  return `<div class="modal-overlay"><div class="modal-box">${content}</div></div>`;
+}
+
+function renderDashboard() {
+  const totalBalance = state.accounts.reduce((s,a) => s + parseFloat(a.balance||0), 0);
+  const savings = state.accounts.filter(a=>a.accountType==='SAVINGS');
+  const checking = state.accounts.filter(a=>a.accountType==='CHECKING');
+
+  return `
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total balance</div>
+        <div class="stat-value">${fmtMoney(totalBalance)}</div>
+        <div class="stat-sub">${state.accounts.length} account${state.accounts.length!==1?'s':''}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Savings accounts</div>
+        <div class="stat-value">${savings.length}</div>
+        <div class="stat-sub">${fmtMoney(savings.reduce((s,a)=>s+parseFloat(a.balance||0),0))}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Checking accounts</div>
+        <div class="stat-value">${checking.length}</div>
+        <div class="stat-sub">${fmtMoney(checking.reduce((s,a)=>s+parseFloat(a.balance||0),0))}</div>
+      </div>
+    </div>
+
+    <div class="section-header">
+      <div class="section-title-text">Your accounts</div>
+      <button class="btn btn-outline" style="font-size:12px;padding:6px 12px" onclick="setState({showModal:'create-account'})">
+        ${svgIcon('plus')} New account
+      </button>
+    </div>
+
+    ${state.accounts.length === 0 ? `
+      <div class="card">
+        <div class="empty-state">
+          <div style="font-size:32px;margin-bottom:8px">🏦</div>
+          <div style="font-size:14px;font-weight:500;color:var(--muted);margin-bottom:6px">No accounts yet</div>
+          <div style="font-size:12px;color:var(--hint);margin-bottom:16px">Create your first account to get started</div>
+          <button class="btn btn-primary" style="margin:0 auto;max-width:180px" onclick="setState({showModal:'create-account'})">Create account</button>
+        </div>
+      </div>
+    ` : `
+      <div class="accounts-grid">
+        ${state.accounts.map(a => `
+          <div class="account-card" onclick="navigate('transactions', ${JSON.stringify(a).replace(/"/g,'&quot;')})">
+            <div class="account-type-badge">${a.accountType}</div>
+            <div class="account-number">${shortAccNum(a.accountNumber)}</div>
+            <div class="account-balance">${fmtMoney(a.balance)}</div>
+            <div class="account-balance-label">Available balance</div>
+            <div style="margin-top:14px;display:flex;gap:6px" onclick="event.stopPropagation()">
+              <button class="btn" style="flex:1;background:rgba(255,255,255,0.1);color:white;font-size:11px;padding:6px;justify-content:center" onclick="setState({selectedAccount:${JSON.stringify(a).replace(/"/g,'&quot;')},showModal:'deposit'})">Deposit</button>
+              <button class="btn" style="flex:1;background:rgba(255,255,255,0.1);color:white;font-size:11px;padding:6px;justify-content:center" onclick="setState({selectedAccount:${JSON.stringify(a).replace(/"/g,'&quot;')},showModal:'withdraw'})">Withdraw</button>
+              <button class="btn" style="flex:1;background:rgba(255,255,255,0.1);color:white;font-size:11px;padding:6px;justify-content:center" onclick="setState({selectedAccount:${JSON.stringify(a).replace(/"/g,'&quot;')},showModal:'transfer'})">Transfer</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `}`;
+}
+
+function renderTransactions() {
+  const acc = state.selectedAccount;
+  if (!acc) return `<div class="empty-state">Select an account first</div>`;
+  const txns = state.transactions;
+
+  return `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+      <button class="btn btn-outline" style="font-size:12px;padding:6px 10px" onclick="navigate('dashboard')">← Back</button>
+      <div>
+        <div style="font-size:14px;font-weight:600">${acc.accountType} Account</div>
+        <div style="font-size:11px;color:var(--hint);font-family:monospace">${acc.accountNumber}</div>
+      </div>
+      <div style="margin-left:auto;text-align:right">
+        <div style="font-size:20px;font-weight:700">${fmtMoney(acc.balance)}</div>
+        <div style="font-size:11px;color:var(--hint)">Current balance</div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      <button class="btn btn-success" style="font-size:12px;padding:7px 14px" onclick="setState({showModal:'deposit'})">+ Deposit</button>
+      <button class="btn btn-danger" style="font-size:12px;padding:7px 14px" onclick="setState({showModal:'withdraw'})">- Withdraw</button>
+      <button class="btn" style="font-size:12px;padding:7px 14px;background:var(--blue);color:white" onclick="setState({showModal:'transfer'})">↗ Transfer</button>
+      <button class="btn btn-outline" style="font-size:12px;padding:7px 14px;margin-left:auto" onclick="loadTransactions(${acc.id})">↻ Refresh</button>
+    </div>
+
+    <div class="card-title" style="margin-bottom:12px">Transaction history (${txns.length})</div>
+
+    ${txns.length === 0 ? `
+      <div class="empty-state" style="padding:32px">
+        <div style="font-size:28px;margin-bottom:8px">📋</div>
+        <div style="font-size:13px;color:var(--muted)">No transactions yet</div>
+      </div>
+    ` : txns.map(t => {
+      const isCredit = t.type === 'DEPOSIT' || t.type === 'TRANSFER_IN';
+      const iconClass = t.type==='DEPOSIT'?'txn-icon-deposit':t.type==='WITHDRAWAL'?'txn-icon-withdrawal':'txn-icon-transfer';
+      const icon = t.type==='DEPOSIT'?'↓':t.type==='WITHDRAWAL'?'↑':t.type==='TRANSFER_IN'?'↙':'↗';
+      const label = t.type.replace('_',' ');
+      return `
+        <div class="txn-row">
+          <div class="txn-icon ${iconClass}">${icon}</div>
+          <div class="txn-info">
+            <div class="txn-title">${label}${t.description?` — ${t.description}`:''}</div>
+            <div class="txn-meta">${fmtDate(t.timestamp)}${t.relatedAccountNumber?' · '+shortAccNum(t.relatedAccountNumber):''}</div>
+          </div>
+          <div>
+            <div class="txn-amount ${isCredit?'credit':'debit'}">${isCredit?'+':'-'}${fmtMoney(t.amount)}</div>
+            <div class="txn-balance">${fmtMoney(t.balanceBefore)} → ${fmtMoney(t.balanceAfter)}</div>
+          </div>
+        </div>`;
+    }).join('')}`;
+}
+
+function renderApp() {
+  let pageContent = '';
+  let pageTitle = '';
+  if (state.navPage === 'dashboard') { pageContent = renderDashboard(); pageTitle = 'Dashboard'; }
+  else if (state.navPage === 'accounts') { pageContent = renderDashboard(); pageTitle = 'Accounts'; }
+  else if (state.navPage === 'transactions') { pageContent = renderTransactions(); pageTitle = 'Transactions'; }
+
+  return `
+  <div class="layout">
+    <div class="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-mark">
+          <div class="logo-icon">S</div>
+          <div>
+            <div class="logo-text">SecureBank</div>
+            <div class="logo-sub">Online Banking</div>
+          </div>
+        </div>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-label">Menu</div>
+        <div class="nav-item ${state.navPage==='dashboard'?'active':''}" onclick="navigate('dashboard')">
+          ${svgIcon('home')} Dashboard
+        </div>
+        <div class="nav-item ${state.navPage==='accounts'?'active':''}" onclick="navigate('accounts')">
+          ${svgIcon('credit')} Accounts
+        </div>
+        <div class="nav-label">Actions</div>
+        <div class="nav-item" onclick="setState({showModal:'create-account'})">
+          ${svgIcon('plus')} New account
+        </div>
+      </div>
+      <div class="sidebar-user">
+        <div class="user-avatar">${initials(state.user?.username)}</div>
+        <div class="user-info">
+          <div class="user-name">${state.user?.username || 'User'}</div>
+          <div class="user-role">Account holder</div>
+        </div>
+      </div>
+      <div style="padding:0 12px 16px">
+        <button onclick="doLogout()" style="width:100%;padding:8px;background:rgba(220,38,38,0.15);border:1px solid rgba(220,38,38,0.3);color:#fca5a5;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;letter-spacing:0.03em">
+          Sign out
+        </button>
+      </div>
+    </div>
+    <div class="main">
+      <div class="topbar">
+        <div class="topbar-title">${pageTitle}</div>
+        <div class="topbar-actions">
+          <span class="chip">${svgIcon('lock')} JWT secured</span>
+        </div>
+      </div>
+      <div class="content">
+        ${renderAlert()}
+        ${renderModal()}
+        ${pageContent}
+      </div>
+    </div>
+  </div>`;
+}
+
+function render() {
+  const app = document.getElementById('app');
+  if (state.token && state.view !== 'auth') {
+    app.innerHTML = renderApp();
+  } else {
+    app.innerHTML = renderAuth();
+  }
+}
+
+if (state.token) {
+  state.view = 'app';
+  loadAccounts();
+}
+render();
+</script>
+</body>
+</html>
